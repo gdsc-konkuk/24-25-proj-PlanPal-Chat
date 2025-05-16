@@ -2,7 +2,8 @@ package com.gdg.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.gdg.domain.ChatMessage
-import com.gdg.dto.chat.ChatResponse
+import com.gdg.dto.AiResponse
+import com.gdg.dto.ChatResponse
 import com.gdg.session.SessionRegistry
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.CoroutineScope
@@ -56,6 +57,29 @@ class RedisSubscriber(
                 sessionRegistry.broadcast(roomId, payload, excludeSessionId)
             }
         }
+        val aiListener = MessageListener { message, _ ->
+            CoroutineScope(Dispatchers.IO).launch {
+                val body = String(message.body)
+                val request = objectMapper.readTree(body)
+                val roomId = request["roomId"].asText()
+                val excludeSessionId = request["excludeSessionId"]?.asText()
+                val type = request["type"].asText()
+
+                System.getLogger(request.asText())
+
+                val aiResponse = AiResponse.from(
+                    type,
+                    request["text"].asText(),
+                    request["senderName"].asText(),
+                    request["timestamp"].asLong()
+                )
+                val payload = objectMapper.writeValueAsString(
+                    aiResponse
+                )
+
+                sessionRegistry.broadcast(roomId, payload, excludeSessionId)
+            }
+        }
 
         val refreshScheduleListener = MessageListener { message, _ ->
             CoroutineScope(Dispatchers.IO).launch {
@@ -75,5 +99,6 @@ class RedisSubscriber(
         container.addMessageListener(refreshMapListener, ChannelTopic("refreshMap"))
         container.addMessageListener(refreshScheduleListener, ChannelTopic("refreshSchedule"))
         container.addMessageListener(chatListener, ChannelTopic("chat"))
+        container.addMessageListener(aiListener, ChannelTopic("ai"))
     }
 }
