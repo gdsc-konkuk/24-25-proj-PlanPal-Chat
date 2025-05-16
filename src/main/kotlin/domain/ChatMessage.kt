@@ -8,7 +8,7 @@ data class ChatMessage(
     @Id val id: String? = null,
     val roomId: String,
     val senderName: String,
-    val content: String,
+    val text: String,
     val timestamp: Long = System.currentTimeMillis(),
     val senderSessionId: String
 )
