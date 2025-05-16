@@ -8,7 +8,7 @@ data class ChatResponse(
     val type: String = "chat",
     val senderName: String,
     val text: String,
-    val timestamp: String
+    val sendAt: String
 ) {
     companion object {
         private val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.of("Asia/Seoul"))
@@ -18,7 +18,7 @@ data class ChatResponse(
             return ChatResponse(
                 senderName = senderName,
                 text = text,
-                timestamp = isoString
+                sendAt = isoString
             )
         }
     }
