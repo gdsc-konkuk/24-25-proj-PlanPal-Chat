@@ -37,7 +37,7 @@ class ChatWebSocketHandler(
         }
 
         sessionRegistry.add(roomId, session)
-        val joinMsg = """{"type":"chat","text":"$senderName 님이 입장하셨습니다."}"""
+        val joinMsg = """{"type":"chat","text":"$senderName has entered the chat."}"""
         sessionRegistry.broadcast(roomId, joinMsg)
     }
 
