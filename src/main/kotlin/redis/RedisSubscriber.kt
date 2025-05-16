@@ -78,8 +78,11 @@ class RedisSubscriber(
                 val payload = objectMapper.writeValueAsString(
                     aiResponse
                 )
-
-                sessionRegistry.broadcast(roomId, payload, excludeSessionId)
+                if(type == "aiRequest") {
+                    sessionRegistry.broadcast(roomId, payload, excludeSessionId)
+                }else{
+                    sessionRegistry.broadcast(roomId, payload)
+                }
             }
         }
 
