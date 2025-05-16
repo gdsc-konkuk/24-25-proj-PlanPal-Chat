@@ -24,7 +24,7 @@ class ApiClient(
         }
         val uri = UriComponentsBuilder.fromHttpUrl("$backendUrl$endpoint")
             .queryParam("senderName", senderName)
-            .queryParam("chatRoomId", )
+            .queryParam("chatRoomId",roomId )
             .queryParam("prompt", prompt)
             .build()
             .toUriString()
