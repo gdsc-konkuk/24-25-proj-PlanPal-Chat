@@ -133,7 +133,7 @@ class ChatWebSocketHandler(
                 "refreshMap", "refreshSchedule" -> {
                     val request = mapOf(
                         "roomId" to roomId,
-                        "excludeSessionId" to sessionId
+                        "senderSessionId" to sessionId
                     )
                     val payload = objectMapper.writeValueAsString(request)
                     redisPublisher.publish(type, payload)
