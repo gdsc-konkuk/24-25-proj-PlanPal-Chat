@@ -2,6 +2,7 @@ package com.gdg.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.gdg.domain.ChatMessage
+import com.gdg.dto.chat.AiResponse
 import com.gdg.dto.chat.ChatResponse
 import com.gdg.session.SessionRegistry
 import jakarta.annotation.PostConstruct
@@ -72,8 +73,33 @@ class RedisSubscriber(
             }
         }
 
+        val aiListener = MessageListener { message, _ ->
+            CoroutineScope(Dispatchers.IO).launch {
+                val body = String(message.body)
+                val request = objectMapper.readTree(body)
+                val roomId = request["roomId"].asText()
+                val excludeSessionId = request["excludeSessionId"]?.asText()
+                val type = request["type"].asText()
+
+                System.getLogger(request.asText())
+
+                val aiResponse = AiResponse(
+                    type = type,
+                    text = request["text"].asText(),
+                    timestamp = request["timestamp"].asLong(),
+                    senderName = request["senderName"].asText(),
+                )
+                val payload = objectMapper.writeValueAsString(
+                    aiResponse
+                )
+
+                sessionRegistry.broadcast(roomId, payload, excludeSessionId)
+            }
+        }
+
         container.addMessageListener(refreshMapListener, ChannelTopic("refresh-map"))
         container.addMessageListener(refreshScheduleListener, ChannelTopic("refresh-schedule"))
         container.addMessageListener(chatListener, ChannelTopic("chat"))
+        container.addMessageListener(aiListener, ChannelTopic("ai"))
     }
 }

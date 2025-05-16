@@ -3,6 +3,7 @@ package com.gdg.infra
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 
 @Component
@@ -13,15 +14,21 @@ class ApiClient(
     @Value("\${backend.url}") // 예: http://backend.internal:8080
     private lateinit var backendUrl: String
 
-    fun sendAiRequest(roomId: String, text: String): Mono<Void> {
-        val endpoint = "/api/rooms/$roomId/ai-message"
+    fun sendAiRequest(roomId: String,senderName: String ,prompt: String): Mono<String> {
+        //val endpoint = "/api/rooms/$roomId/ai-message"
 
-        val payload = mapOf("text" to text)
+        val endpoint = "/ai/ai-message"
+        val uri = UriComponentsBuilder.fromHttpUrl("$backendUrl$endpoint")
+            .queryParam("senderName", senderName)
+            .queryParam("chatRoomId", roomId.toLongOrNull())
+            .queryParam("prompt", prompt)
+            .build()
+            .toUriString()
 
-        return webClient.post()
-            .uri("$backendUrl$endpoint")
-            .bodyValue(payload)
+
+        return webClient.get()
+            .uri(uri)
             .retrieve()
-            .bodyToMono(Void::class.java)
+            .bodyToMono(String::class.java)
     }
 }

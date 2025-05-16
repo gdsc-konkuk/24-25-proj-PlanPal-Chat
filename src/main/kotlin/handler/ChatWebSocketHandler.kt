@@ -39,6 +39,8 @@ class ChatWebSocketHandler(
         val roomId = getRoomId(session)
         if (roomId != null) {
             sessionRegistry.remove(roomId, session)
+
+
         }
     }
 
@@ -69,9 +71,46 @@ class ChatWebSocketHandler(
                     val payload = objectMapper.writeValueAsString(chatMessage)
                     redisPublisher.publish("chat", payload)
                 }
-                "ai" -> {
-                    // AI 백엔드 로직
+
+                "ai-request" -> {
+
+                    val baseUrl = "http//:base-url"
+                    // 우선 사용자 요청도 publish
+                    val userMessage = mapOf(
+                        "type" to "ai-request", // 또는 "user" 등, 구분 가능하게
+                        "text" to text,
+                        "senderName" to senderName,
+                        "roomId" to roomId
+                    )
+                    val userPayload = objectMapper.writeValueAsString(userMessage)
+                    redisPublisher.publish("ai", userPayload)
+
+
+                    apiClient.sendAiRequest(
+                        roomId= roomId,
+                        senderName = senderName,
+                        prompt=text
+                    ).subscribe({ aiResponse ->
+                        val aiMessage = mapOf(
+                            "type" to "ai-response",
+                            "text" to aiResponse,
+                            "senderName" to "AI",
+                            "roomId" to roomId
+                        )
+                        val aiPayload = objectMapper.writeValueAsString(aiMessage)
+                        redisPublisher.publish("ai", aiPayload)
+                    }, { error ->
+                        val errorMessage = mapOf(
+                            "type" to "error",
+                            "test" to "AI 응답 처리 중 오류 발생: ${error.message}",
+                            "roomId" to roomId
+                        )
+                        val errorPayload = objectMapper.writeValueAsString(errorMessage)
+                        redisPublisher.publish("chat", errorPayload)
+                    })
                 }
+
+
                 "refreshMap", "refreshSchedule" -> {
                     val request = mapOf(
                         "roomId" to roomId,
