@@ -49,7 +49,7 @@ class RedisSubscriber(
                 val body = String(message.body)
                 val request = objectMapper.readTree(body)
                 val roomId = request["roomId"].asText()
-                val excludeSessionId = request["excludeSessionId"]?.asText()
+                val excludeSessionId = request["senderSessionId"]?.asText()
 
                 val payload = objectMapper.writeValueAsString(
                     mapOf("type" to "refreshMap")
@@ -63,7 +63,7 @@ class RedisSubscriber(
                 val body = String(message.body)
                 val request = objectMapper.readTree(body)
                 val roomId = request["roomId"].asText()
-                val excludeSessionId = request["excludeSessionId"]?.asText()
+                val excludeSessionId = request["senderSessionId"]?.asText()
                 val type = request["type"].asText()
 
                 System.getLogger(request.asText())
