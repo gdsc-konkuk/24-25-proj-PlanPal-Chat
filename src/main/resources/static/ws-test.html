@@ -32,7 +32,7 @@
     function connect() {
         const baseUrl = document.getElementById("server").value;
         const userId = document.getElementById("userId").value.trim() || "defaultUser";
-        const url = `${baseUrl}/ws/chat?roomId=101&userName=${encodeURIComponent(userId)}`;
+        const url = `${baseUrl}/ws/chat?roomId=2&userName=${encodeURIComponent(userId)}`;
 
         if (socket && socket.readyState !== WebSocket.CLOSED) {
             socket.close();

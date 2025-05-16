@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.gdg.domain.ChatMessage
 import com.gdg.infra.ApiClient
 import com.gdg.redis.RedisPublisher
+import com.gdg.repository.ChatRoomRepository
+import com.gdg.repository.UserRepository
 import com.gdg.session.SessionRegistry
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -15,7 +17,9 @@ class ChatWebSocketHandler(
     private val redisPublisher: RedisPublisher,
     private val sessionRegistry: SessionRegistry,
     private val objectMapper: ObjectMapper,
-    private val apiClient: ApiClient
+    private val apiClient: ApiClient,
+    private val userRepository: UserRepository,
+    private val chatRoomRepository: ChatRoomRepository
 ) : TextWebSocketHandler() {
 
     private val logger = LoggerFactory.getLogger(ChatWebSocketHandler::class.java)
@@ -39,8 +43,6 @@ class ChatWebSocketHandler(
         val roomId = getRoomId(session)
         if (roomId != null) {
             sessionRegistry.remove(roomId, session)
-
-
         }
     }
 
@@ -60,11 +62,22 @@ class ChatWebSocketHandler(
                 return
             }
 
+            val user = userRepository.findByName(senderName)
+                .orElseThrow { IllegalArgumentException("유저를 찾을 수 없습니다.") }
+
+            val profileImageUrl = user.profileImageUrl
+
+            val chatRoom = chatRoomRepository.findById(roomId.toLong())
+                .orElseThrow { IllegalArgumentException("채팅방을 찾을 수 없습니다.") }
+
+            val limitUsers = chatRoom.limitUsers // To Do : 채팅방 유저 제한 구현
+
             when (type) {
                 "chat" -> {
                     val chatMessage = ChatMessage(
                         type="chat",
                         roomId = roomId,
+                        imgUrl = profileImageUrl,
                         senderName = senderName,
                         text = text,
                         senderSessionId = sessionId
@@ -80,6 +93,7 @@ class ChatWebSocketHandler(
                     val aiRequestChatMessage = ChatMessage(
                         type="ai-request",
                         roomId = roomId,
+                        imgUrl = profileImageUrl,
                         senderName = senderName,
                         text = text,
                         senderSessionId = sessionId
@@ -96,6 +110,7 @@ class ChatWebSocketHandler(
                         val aiResponseChatMessage = ChatMessage(
                             type="ai-response",
                             roomId = roomId,
+                            imgUrl = profileImageUrl,
                             senderName = "ai",
                             text = aiResponse,
                             senderSessionId = sessionId
