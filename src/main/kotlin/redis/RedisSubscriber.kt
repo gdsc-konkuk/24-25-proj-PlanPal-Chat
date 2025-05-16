@@ -70,8 +70,8 @@ class RedisSubscriber(
 
                 val aiResponse = AiResponse.from(
                     type,
-                    request["text"].asText(),
                     request["senderName"].asText(),
+                    request["text"].asText(),
                     request["timestamp"].asLong(),
                     request["imgUrl"].asText()
                 )
