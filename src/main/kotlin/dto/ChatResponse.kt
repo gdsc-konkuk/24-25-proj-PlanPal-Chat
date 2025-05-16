@@ -8,17 +8,19 @@ data class ChatResponse(
     val type: String = "chat",
     val senderName: String,
     val text: String,
-    val sendAt: String
+    val sendAt: String,
+    val imgUrl: String
 ) {
     companion object {
         private val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.of("Asia/Seoul"))
 
-        fun from(senderName: String, text: String, epochMillis: Long): ChatResponse {
+        fun from(senderName: String, text: String, epochMillis: Long, imgUrl: String): ChatResponse {
             val isoString = formatter.format(Instant.ofEpochMilli(epochMillis))
             return ChatResponse(
                 senderName = senderName,
                 text = text,
-                sendAt = isoString
+                sendAt = isoString,
+                imgUrl = imgUrl
             )
         }
     }

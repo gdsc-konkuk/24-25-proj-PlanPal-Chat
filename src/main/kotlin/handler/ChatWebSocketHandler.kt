@@ -110,7 +110,7 @@ class ChatWebSocketHandler(
                         val aiResponseChatMessage = ChatMessage(
                             type="aiResponse",
                             roomId = roomId,
-                            imgUrl = profileImageUrl,
+                            imgUrl = "ai",
                             senderName = "ai",
                             text = aiResponse,
                             senderSessionId = sessionId

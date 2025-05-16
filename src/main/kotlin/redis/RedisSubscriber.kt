@@ -31,7 +31,8 @@ class RedisSubscriber(
                 val response = ChatResponse.from(
                     chat.senderName,
                     chat.text,
-                    chat.timestamp
+                    chat.timestamp,
+                    chat.imgUrl
                 )
                 val payload = objectMapper.writeValueAsString(response)
 
@@ -71,7 +72,8 @@ class RedisSubscriber(
                     type,
                     request["text"].asText(),
                     request["senderName"].asText(),
-                    request["timestamp"].asLong()
+                    request["timestamp"].asLong(),
+                    request["imgUrl"].asText()
                 )
                 val payload = objectMapper.writeValueAsString(
                     aiResponse
