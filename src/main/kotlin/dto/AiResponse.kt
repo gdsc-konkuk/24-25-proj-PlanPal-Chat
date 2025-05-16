@@ -8,7 +8,7 @@ data class AiResponse(
     val type: String,
     val senderName: String,
     val text: String,
-    val timestamp: Long
+    val sendAt: Long
 ){
     companion object {
         private val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.of("Asia/Seoul"))
@@ -19,7 +19,7 @@ data class AiResponse(
                 type=type,
                 senderName = senderName,
                 text = text,
-                timestamp = isoString
+                sendAt = isoString
             )
         }
     }
