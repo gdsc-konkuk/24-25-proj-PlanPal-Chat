@@ -1,4 +1,4 @@
-package com.gdg.dto.chat
+package com.gdg.dto
 
 import java.time.Instant
 import java.time.ZoneId

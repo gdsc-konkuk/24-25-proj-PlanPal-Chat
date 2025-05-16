@@ -63,6 +63,7 @@ class ChatWebSocketHandler(
             when (type) {
                 "chat" -> {
                     val chatMessage = ChatMessage(
+                        type="chat",
                         roomId = roomId,
                         senderName = senderName,
                         text = text,
@@ -74,15 +75,16 @@ class ChatWebSocketHandler(
 
                 "ai-request" -> {
 
-                    val baseUrl = "http//:base-url"
                     // 우선 사용자 요청도 publish
-                    val userMessage = mapOf(
-                        "type" to "ai-request", // 또는 "user" 등, 구분 가능하게
-                        "text" to text,
-                        "senderName" to senderName,
-                        "roomId" to roomId
+
+                    val aiRequestChatMessage = ChatMessage(
+                        type="ai-request",
+                        roomId = roomId,
+                        senderName = senderName,
+                        text = text,
+                        senderSessionId = sessionId
                     )
-                    val userPayload = objectMapper.writeValueAsString(userMessage)
+                    val userPayload = objectMapper.writeValueAsString(aiRequestChatMessage)
                     redisPublisher.publish("ai", userPayload)
 
 
@@ -91,13 +93,14 @@ class ChatWebSocketHandler(
                         senderName = senderName,
                         prompt=text
                     ).subscribe({ aiResponse ->
-                        val aiMessage = mapOf(
-                            "type" to "ai-response",
-                            "text" to aiResponse,
-                            "senderName" to "AI",
-                            "roomId" to roomId
+                        val aiResponseChatMessage = ChatMessage(
+                            type="ai-response",
+                            roomId = roomId,
+                            senderName = "ai",
+                            text = aiResponse,
+                            senderSessionId = sessionId
                         )
-                        val aiPayload = objectMapper.writeValueAsString(aiMessage)
+                        val aiPayload = objectMapper.writeValueAsString(aiResponseChatMessage)
                         redisPublisher.publish("ai", aiPayload)
                     }, { error ->
                         val errorMessage = mapOf(

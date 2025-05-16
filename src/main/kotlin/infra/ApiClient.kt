@@ -18,9 +18,13 @@ class ApiClient(
         //val endpoint = "/api/rooms/$roomId/ai-message"
 
         val endpoint = "/ai/ai-message"
+        val roomIdLong = roomId.toLongOrNull()
+        if (roomIdLong==null){
+            return Mono.just("error : room id is not Long");
+        }
         val uri = UriComponentsBuilder.fromHttpUrl("$backendUrl$endpoint")
             .queryParam("senderName", senderName)
-            .queryParam("chatRoomId", roomId.toLongOrNull())
+            .queryParam("chatRoomId", )
             .queryParam("prompt", prompt)
             .build()
             .toUriString()

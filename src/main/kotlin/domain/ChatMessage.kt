@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document(collection = "chat_messages")
 data class ChatMessage(
     @Id val id: String? = null,
+    val type:String,
     val roomId: String,
     val senderName: String,
     val text: String,
