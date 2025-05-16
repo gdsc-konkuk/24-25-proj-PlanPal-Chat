@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.gdg.domain.ChatMessage
 import com.gdg.infra.ApiClient
 import com.gdg.redis.RedisPublisher
+import com.gdg.repository.ChatMessageRepository
 import com.gdg.repository.ChatRoomRepository
 import com.gdg.repository.UserRepository
 import com.gdg.session.SessionRegistry
@@ -19,7 +20,8 @@ class ChatWebSocketHandler(
     private val objectMapper: ObjectMapper,
     private val apiClient: ApiClient,
     private val userRepository: UserRepository,
-    private val chatRoomRepository: ChatRoomRepository
+    private val chatRoomRepository: ChatRoomRepository,
+    private val chatMessageRepository: ChatMessageRepository
 ) : TextWebSocketHandler() {
 
     private val logger = LoggerFactory.getLogger(ChatWebSocketHandler::class.java)
@@ -84,14 +86,12 @@ class ChatWebSocketHandler(
                     )
                     val payload = objectMapper.writeValueAsString(chatMessage)
                     redisPublisher.publish("chat", payload)
+                    chatMessageRepository.save(chatMessage).subscribe()
                 }
 
-                "ai-request" -> {
-
-                    // 우선 사용자 요청도 publish
-
+                "aiRequest" -> {
                     val aiRequestChatMessage = ChatMessage(
-                        type="ai-request",
+                        type="aiRequest",
                         roomId = roomId,
                         imgUrl = profileImageUrl,
                         senderName = senderName,
@@ -100,7 +100,7 @@ class ChatWebSocketHandler(
                     )
                     val userPayload = objectMapper.writeValueAsString(aiRequestChatMessage)
                     redisPublisher.publish("ai", userPayload)
-
+                    chatMessageRepository.save(aiRequestChatMessage).subscribe()
 
                     apiClient.sendAiRequest(
                         roomId= roomId,
@@ -108,7 +108,7 @@ class ChatWebSocketHandler(
                         prompt=text
                     ).subscribe({ aiResponse ->
                         val aiResponseChatMessage = ChatMessage(
-                            type="ai-response",
+                            type="aiResponse",
                             roomId = roomId,
                             imgUrl = profileImageUrl,
                             senderName = "ai",
@@ -117,6 +117,7 @@ class ChatWebSocketHandler(
                         )
                         val aiPayload = objectMapper.writeValueAsString(aiResponseChatMessage)
                         redisPublisher.publish("ai", aiPayload)
+                        chatMessageRepository.save(aiResponseChatMessage).subscribe()
                     }, { error ->
                         val errorMessage = mapOf(
                             "type" to "error",
