@@ -119,13 +119,7 @@ class ChatWebSocketHandler(
                         redisPublisher.publish("ai", aiPayload)
                         chatMessageRepository.save(aiResponseChatMessage).subscribe()
                     }, { error ->
-                        val errorMessage = mapOf(
-                            "type" to "error",
-                            "test" to "AI 응답 처리 중 오류 발생: ${error.message}",
-                            "roomId" to roomId
-                        )
-                        val errorPayload = objectMapper.writeValueAsString(errorMessage)
-                        redisPublisher.publish("chat", errorPayload)
+                        logger.error("AI 응답 처리 중 오류 발생: ${error.message}", error)
                     })
                 }
 
@@ -133,7 +127,7 @@ class ChatWebSocketHandler(
                 "refreshMap", "refreshSchedule" -> {
                     val request = mapOf(
                         "roomId" to roomId,
-                        "excludeSessionId" to sessionId
+                        "senderSessionId" to sessionId
                     )
                     val payload = objectMapper.writeValueAsString(request)
                     redisPublisher.publish(type, payload)
