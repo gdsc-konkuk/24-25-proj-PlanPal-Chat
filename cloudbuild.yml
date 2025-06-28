@@ -22,7 +22,7 @@ steps:
     args:
       - "set"
       - "image"
-      - "deployment/planpal-server"
+      - "deployment/planpal-chat-server"
       - "planpal-server-container=asia-northeast3-docker.pkg.dev/k8s-test-464207/k8s-server-registry/planpal-chat-server:$SHORT_SHA"
 
   # 5. Service 적용
