@@ -22,6 +22,7 @@ steps:
     args:
       - '-c'
       - |
+        gcloud container clusters get-credentials autopilot-cluster-1 --region asia-northeast3 --project k8s-test-464207
         sed -i "s|IMAGE_TAG_PLACEHOLDER|$SHORT_SHA|g" k8s/deployment.yml
         kubectl apply -f k8s/
 
