@@ -22,7 +22,7 @@ steps:
     args:
       - '-c'
       - |
-        sed -i "s|IMAGE_TAG_PLACEHOLDER|$SHORT_SHA|g" k8s/deployment.yaml
+        sed -i "s|IMAGE_TAG_PLACEHOLDER|$SHORT_SHA|g" k8s/deployment.yml
         kubectl apply -f k8s/
 
 options:
