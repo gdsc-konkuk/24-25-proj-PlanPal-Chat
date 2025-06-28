@@ -14,23 +14,16 @@ steps:
     args: ['push',
            'asia-northeast3-docker.pkg.dev/k8s-test-464207/k8s-server-registry/planpal-chat-server:$SHORT_SHA']
 
-    # 4. Deployment에 새로 빌드한 이미지 버전 적용
   - name: "gcr.io/cloud-builders/kubectl"
     env:
       - 'CLOUDSDK_COMPUTE_REGION=asia-northeast3'
       - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1'
+    entrypoint: 'sh'
     args:
-      - "set"
-      - "image"
-      - "deployment/planpal-chat-deployment"
-      - "planpal-server-container=asia-northeast3-docker.pkg.dev/k8s-test-464207/k8s-server-registry/planpal-chat-server:$SHORT_SHA"
-
-  # 5. Service 적용
-  - name: 'gcr.io/cloud-builders/kubectl'
-    env:
-      - 'CLOUDSDK_COMPUTE_REGION=asia-northeast3'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1'
-    args: ['apply', '-f', 'service.yml']
+      - '-c'
+      - |
+        sed -i "s|IMAGE_TAG_PLACEHOLDER|$SHORT_SHA|g" k8s/deployment.yaml
+        kubectl apply -f k8s/
 
 options:
   logging: CLOUD_LOGGING_ONLY
