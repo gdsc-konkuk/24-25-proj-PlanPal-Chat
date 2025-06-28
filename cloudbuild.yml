@@ -1,0 +1,40 @@
+steps:
+  # 1. Gradle 빌드
+  - name: 'gradle:7.6-jdk21'
+    args: ['gradle', 'build', '-x', 'test']
+
+  # 2. Docker 이미지 빌드
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t',
+           'asia-northeast3-docker.pkg.dev/k8s-test-464207/k8s-server-registry/planpal-chat-server:$SHORT_SHA',
+           '.']
+
+  # 3. Docker 이미지 푸시
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push',
+           'asia-northeast3-docker.pkg.dev/k8s-test-464207/k8s-server-registry/planpal-chat-server:$SHORT_SHA']
+
+    # 4. Deployment에 새로 빌드한 이미지 버전 적용
+  - name: "gcr.io/cloud-builders/kubectl"
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=asia-northeast3'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1'
+    args:
+      - "set"
+      - "image"
+      - "deployment/planpal-server"
+      - "planpal-server-container=asia-northeast3-docker.pkg.dev/k8s-test-464207/k8s-server-registry/planpal-chat-server:$SHORT_SHA"
+
+  # 5. Service 적용
+  - name: 'gcr.io/cloud-builders/kubectl'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=asia-northeast3'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1'
+    args: ['apply', '-f', 'service.yml']
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+
+images:
+  - 'asia-northeast3-docker.pkg.dev/k8s-test-464207/k8s-server-registry/planpal-chat-server:$SHORT_SHA'

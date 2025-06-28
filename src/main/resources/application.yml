@@ -1,3 +1,4 @@
 spring:
   config:
-    import: classpath:secret.yml
+    #import: classpath:secret.yml
+    import: file:/app/resources-chat/secret.yml
